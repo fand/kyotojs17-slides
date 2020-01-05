@@ -1,0 +1,24 @@
+{
+  "name": "kyotojs17-slide",
+  "version": "0.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "init": "npx fusuma init",
+    "start": "npx fusuma start",
+    "build": "npx fusuma build",
+    "live": "npx fusuma live",
+    "deploy": "npx fusuma deploy",
+    "export": "npx fusuma pdf"
+  },
+  "keywords": [],
+  "author": "fand <fand.gmork@gmail.com> (https://gmork.in/)",
+  "license": "MIT",
+  "devDependencies": {
+    "fusuma": "^1.15.0"
+  },
+  "dependencies": {
+    "react-vfx": "^0.1.1"
+  }
+}
