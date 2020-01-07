@@ -19,6 +19,8 @@
     "fusuma": "^1.15.0"
   },
   "dependencies": {
+    "react": "^16.12.0",
+    "react-dom": "^16.12.0",
     "react-vfx": "^0.1.1"
   }
 }

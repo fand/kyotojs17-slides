@@ -13,8 +13,11 @@ slide:
   code:
     languages:
       - javascript
+      - typescript
+      - jsx
+      - tsx
     plugins: []
-    theme: default
+    theme: okaidia
   chart: false
   math: false
 extends:
