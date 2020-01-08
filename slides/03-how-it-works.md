@@ -5,9 +5,17 @@
 
 ---
 
+## 登場人物
+
+- VFXPlayer: シーン管理、描画
+- VFXProvider: canvas生成、Player初期化
+- VFXElement: img等のラッパー
+
+---
+
 ## 処理の流れ
 
-- 1. Providerでcanvasを生成
+- 1. VFXProviderがcanvasを生成
 - 2. Elementsのマウント時に登録
 - 3. メインループ
   - 要素の位置を更新
@@ -15,44 +23,95 @@
 
 ---
 
-TODO:ここにSkitchの画像はる
+<img src="./how-it-works.png" />
 
 ---
 
-## 1. Providerでcanvasを生成
+## 1. VFXProvider
 
-- ContextでVFXPlayerを渡す
+- 画面全体を覆うcanvasを生成
+- VFXPlayerを初期化
+  - Three.js周りを管理するクラス
+- ContextにVFXPlayerを渡す
 
-```typescript
-const foo: number = 3;
+---
+
+hooks便利〜
+
+```javascript
+const VFXContext = createContext(null);
+
+const VFXProvider = props => {
+  const [player, setPlayer] = useState(null);
+
+  useEffect(() => {
+    // 中略
+
+    const p = new VFXPlayer(canvas)
+    setPlayer(p);
+
+    // 中略
+  }, []);
+
+  return (
+    <VFXContext.Provider value={player}>
+      {props.children}
+    </VFXContext.Provider>
+  );
+};
 ```
 
+---
+
+## VFXElements
+
+- マウント時にVFXPlayerに登録
+- 要素に応じてTextureを作成
+  - img, video: そのままThree.jsに渡す
+    - WebGLはvideo要素から直接テクスチャ作れて最高！
+  - span, div: 気合で画像に変換（後述）
 
 ---
 
-## 2. Elementsのマウント時に登録
-  - hooksでモデルを呼び出し
+hooks便利〜
+
+```javascript　
+const VFXImg = props => {
+  const { shader } = props;
+  const player = useContext(VFXContext);
+  const ref = useRef(null);
+
+  const init = useCallback(() => {
+    // VFXPlayerに登録
+    player?.addElement(ref.current, { shader });
+
+    return () => {
+        // VFXPlayerから削除
+        player?.removeElement(ref.current);
+    };
+  }, [shader, player]);
+
+  return <img ref={ref} {...props} onLoad={init} />;
+};
+```
 
 ---
+import * as VFX from 'react-vfx';
 
-## 3. 毎フレームviewportを更新
+## 3.メインループ
 
-- まあまあ重いけど動くからヨシ！
-- IntersectionObserverも使ってみたけど<br/>
-  微妙だった
-  - コールバックの実行が遅れる事がある(？)
-  - 遅延ロード等に使われるAPIだから仕方ないか……
-
----
-
-- 画像、動画は直接テクスチャを作成
-- WebGLはvideo要素から直接テクスチャ作れて最高
+- 各要素の要素の位置を毎フレーム取得
+  - 画面内にあれば、その位置にテクスチャを描画
+  - <b><VFX.VFXDiv shader="rainbow">まあまあ重いけど動くからヨシ！</VFX.VFXDiv></b>
+- IntersectionObserverも試したけど微妙だった
+  - コールバックの実行がたまに遅れる(？)
+  - 遅延ロード等に使われるAPIだから仕方ない……
 
 ---
-
+　　
 ## テキストを画像に変換
 
-- 当初はhtml2canvasを使用
+- 当初は[html2canvas](https://html2canvas.hertzen.com/)を使用
 - 遅い上に無駄なリクエストが走りまくるので断念
   - キャプチャするたびにページ全体をクローンする仕組みのため
   - 正確にスタイルを再現するには<br/>
@@ -63,6 +122,8 @@ const foo: number = 3;
 - 今回は、最低限プレーンテキストが画像化できれば良い
 - SVGのforeign objectを使う
   - html2canvasの中身で使ってる奴
+
+TODO: foreignObjectについて書く
 
 ---
 
