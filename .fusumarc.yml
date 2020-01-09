@@ -2,6 +2,7 @@ meta:
   title: Inside REACT-VFX
   thumbnail: slides/ogimage.png
   description: REACT-VFXの実装について解説
+  siteName: amagi.dev
   sns:
     - twitter
     - hatena
