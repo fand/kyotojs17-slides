@@ -1,0 +1,60 @@
+<!DOCTYPE html><html lang="en"><head><meta http-equiv="Content-type" content="text/html; charset=utf-8"><meta name="theme-color" content="#3498db"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="REACT-VFXの実装について解説"><title>Inside REACT-VFX</title><meta property="og:title" content="Inside REACT-VFX"><meta property="og:type" content="article"><meta property="og:image" content="slides/ogimage.png"><meta property="og:site_name" content="amagi.dev"><meta property="og:description" content="REACT-VFXの実装について解説"><link href="vendor.9.6423646d903c6724b35b.css" rel="stylesheet"><link href="main.5.b3c336a0936f54e1b870.css" rel="stylesheet"></head><body><div id="root"><svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 24 24" class="btn-sidebar" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg><article id="webslides"><section class="aligncenter"><h1><img src="7f98c4fab93b97f2f08f5caa3ed2edf3.webp" alt="REACT-VFX" shader="glitch"></h1></section><section class="aligncenter section-title"><div class="card-50"><div class="flex-content"><img src="31b29d0a08f132fd968925bbe7ec508e.webp" shader="rgbShift"></div><div class="flex-content"><h1>自己紹介</h1><ul><li><a href="https://twitter.com/amagitakayosi">@amagitakayosi</a></li><li>Kyoto.js主催</li></ul></div></div></section><section class="aligncenter"><h2>WebGLでVJやってます</h2><video src="slides/vj.mp4" autoplay="" loop="" muted=""></video></section><section class="aligncenter"><h2><div shader="rainbow">こんなん作りました</div></h2><p><a href="https://amagi.dev/react-vfx/">https://amagi.dev/react-vfx/</a></p></section><section class="aligncenter section-blue section-title"><h1><div shader="rgbShift">経緯</div></h1></section><section class="aligncenter"><ul><li>ぼく「ポートフォリオ作りたいな〜」</li><li>ぼく「参考に<a href="https://www.awwwards.com/">AWWWARDS</a>でもみるか」<ul><li>僕はChromeに<a href="https://usepanda.com/">Panda</a>入れてます</li></ul></li></ul></section><section class="aligncenter"><p>この画像エフェクトかっこいいな〜</p><img src="819899fef43514cb514eab83a6df0f76.webp" alt="AWWWARDS example 1"></section><section class="aligncenter"><p>かっけ〜！</p><img src="e027e0f7b3f8a1ab7b21630916f5e6fc.webp" alt="AWWWARDS example 1"></section><section class="aligncenter"><img class="bg" src="f55a8c18a711d6d1c5fb171fd38ceb08.webp"><h2>僕の<a href="https://github.com/fand/vedajs">VEDAJS</a>で作れるかな？</h2><ul><li>WebGL(GLSL)でアニメーションを描画するライブラリ</li><li>要素の数だけcanvasを生成する必要があり、非効率</li><li>WebGL contextの数に上限アリ(<a href="https://www.reddit.com/r/firefox/comments/7m6iph/webgl_context_limit/">ソース</a>)</li></ul></section><section class="aligncenter"><h2>Spector.jsで見てみる</h2><ul><li><a href="https://github.com/BabylonJS/Babylon.js">BabylonJS</a>チームによるWebGLデバッグツール</li><li>どういう順番で描画命令とかテクスチャを見れる</li></ul></section><section class="aligncenter"><img src="4765115dd56af458f412e6b90436e010.webp" alt="Spectorの画面"></section><section class="aligncenter"><h2>Devtools見た結果</h2><ul><li>ページ全体にcanvas一枚</li><li>画像ごとに描画されてる</li><li>Three.jsの場合、画像毎にシーン作って<br>viewport設定して描画すれば良さそう</li></ul></section><section class="aligncenter"><p>参考: Three.jsのexample</p><img src="eff25521ca651168825b9cf1d5f9f7dc.webp"></section><section class="aligncenter section-red"><h2>できました</h2><a href="https://amagi.dev/react-vfx/" target="_blank"><img src="7ef5ad39f64276ea868280e35d9520d4.webp" alt="REACT-VFX 完成の様子"></a></section><section class="aligncenter section-blue section-title"><h1>react-vfxの仕組み</h1></section><section class="aligncenter"><h2>登場人物</h2><ul><li>VFXPlayer: シーン管理、描画</li><li>VFXProvider: canvas生成、Player初期化</li><li>VFXElement: img等のラッパー</li></ul></section><section class="aligncenter"><h2>処理の流れ</h2><ul><li><ol><li>VFXProviderがcanvasを生成</li></ol></li><li><ol start="2"><li>Elementsのマウント時に登録</li></ol></li><li><ol start="3"><li>メインループ</li></ol><ul><li>要素の位置を更新</li><li>画面内の要素を描画</li></ul></li></ul></section><section class="aligncenter"><img src="8ba42b9c4ce1d4f1d6fd15ebc68d9f65.webp"></section><section class="aligncenter"><h2>1. VFXProvider</h2><ul><li>画面全体を覆うcanvasを生成</li><li>VFXPlayerを初期化<ul><li>Three.js周りを管理するクラス</li></ul></li><li>ContextにVFXPlayerを渡す</li></ul></section><section class="aligncenter"><p>hooks便利〜</p><pre><code class="language-javascript">const VFXContext = createContext(null);
+
+const VFXProvider = props =&gt; {
+  const [player, setPlayer] = useState(null);
+
+  useEffect(() =&gt; {
+    // 中略
+
+    const p = new VFXPlayer(canvas)
+    setPlayer(p);
+
+    // 中略
+  }, []);
+
+  return (
+    &lt;VFXContext.Provider value={player}&gt;
+      {props.children}
+    &lt;/VFXContext.Provider&gt;
+  );
+};
+</code></pre></section><section class="aligncenter"><h2>VFXElements</h2><ul><li>マウント時にVFXPlayerに登録</li><li>要素に応じてTextureを作成<ul><li>img, video: そのままThree.jsに渡す<ul><li>WebGLはvideo要素から直接テクスチャ作れて最高！</li></ul></li><li>span, div: 気合で画像に変換（後述）</li></ul></li></ul></section><section class="aligncenter"><p>hooks便利〜</p><pre><code class="language-javascript　">const VFXImg = props =&gt; {
+  const { shader } = props;
+  const player = useContext(VFXContext);
+  const ref = useRef(null);
+
+  // 画像ロード後に呼ぶ
+  const init = useCallback(() =&gt; {
+    // VFXPlayerに登録
+    player?.addElement(ref.current, { shader });
+
+    return () =&gt; {
+        // VFXPlayerから削除
+        player?.removeElement(ref.current);
+    };
+  }, [shader, player]);
+
+  return &lt;img ref={ref} {...props} onLoad={init} /&gt;;
+};
+</code></pre></section><section class="aligncenter"><h2>3.メインループ</h2><ul><li>各要素の要素の位置を毎フレーム取得</li><li>画面内にあれば、その位置にテクスチャを描画</li><li><b><div shader="rainbow">まあまあ重いけど動くからヨシ！</div></b></li></ul></section><section class="aligncenter"><h3>IntersectionObserverは？</h3><ul><li>試したけど微妙だった</li><li>コールバックの実行がたまに遅れる(？)</li><li>遅延ロード等に使われるAPIだから仕方ない……</li></ul></section><section class="aligncenter"><h2>テキストを画像に変換</h2><ul><li>当初は<a href="https://html2canvas.hertzen.com/">html2canvas</a>を使用</li><li>遅い上に無駄なリクエストが走りまくるので断念<ul><li>キャプチャするたびにページ全体をクローンする</li><li>正確にスタイルを再現するには<br>ページ全体をクローンする必要があるため</li></ul></li></ul></section><section class="aligncenter"><p>TODO: 古いブランチでNetworkタブのスクショ撮る</p></section><section class="aligncenter"><ul><li>今回は、最低限プレーンテキストが画像化できれば良い</li><li>SVGの<a href="https://developer.mozilla.org/ja/docs/Web/SVG/Element/foreignObject#Browser_compatibility">foreignObject</a>を使う<ul><li>SVGにDOMを埋め込める奴</li></ul></li></ul></section><section class="aligncenter"><h3>dom2canvasの流れ</h3><ul><li>画像化したい要素をクローン<ul><li>親要素もクローン (vertical-align等の再現に必要)</li></ul></li><li>outerHTMLからSVG文字列を作成</li><li>canvasに描画</li><li>THREE.Textureにcanvasを渡す</li></ul></section><section class="aligncenter"><p>できた</p><p>TODO: ここにdom2canvasの画像を貼る</p></section><section class="aligncenter"><h2>dom2canvasの困りごと</h2><ul><li>微妙にズレたりズレなかったりする<ul><li>html2canvasでもズレてたのでムズそう</li></ul></li><li>子要素があるとおかしくなる</li><li>改行するとおかしくなる</li><li>クロスオリジンなリソースを読み込めない</li></ul></section><section class="aligncenter"><p>なんかいい方法あったら教えてください</p></section><section class="aligncenter section-blue section-title"><h1>おまけ: 背景</h1><img src="7ef5ad39f64276ea868280e35d9520d4.webp" alt="REACT-VFX 背景アニメーション"></section><section class="aligncenter"><h2><a href="https://github.com/react-spring/react-three-fiber">react-three-fiber</a>を使用</h2><ul><li>宣言的にシーンを記述できる</li><li>React + Three.js系ライブラリの中で<br>最も筋が良さそう（個人の感想）</li></ul><pre><code class="language-tsx">&lt;Canvas&gt;
+  &lt;mesh&gt;
+    &lt;boxGeometry args={[1, 1, 1]}/&gt;
+    &lt;meshStandardMaterial/&gt;
+  &lt;/mesh&gt;
+&lt;/Canvas&gt;
+</code></pre></section><section class="aligncenter"><h3>アニメーション用の値</h3><ul><li>普通にnumberをpropsで渡すと重いので🆖</li><li>react-springのuseSpringを使う<ul><li>アニメーションで使いたい値のラッパー</li></ul></li></ul></section><section class="aligncenter"><pre><code class="language-javascript">// scrollのラッパーを作る
+const [{ scroll }, set] = useSpring(() =&gt; ({ scroll: 0 }));
+const onScroll = useCallback(e =&gt; {
+  set({ scroll: window.scrollY });
+}, [set]);
+
+// スクロール位置を 0 ~ 1 に変換
+const top = scroll.interpolate(x =&gt; {
+  return x / (document.body.scrollHeight - window.innerHeight);
+});
+
+return &lt;&gt;
+  &lt;Triangle top={top} /&gt;
+  &lt;Particles top={top} /&gt;
+&lt;/&gt;;
+</code></pre></section><section class="aligncenter"><h2>REACT-VFX本体にも使う？</h2><ul><li>canvasを直接触りたかったのでやめた<ul><li>react-three-fiberはcanvasやrenderer周りを<br>抽象化してくれている</li><li>ふつーのWebGLやるのにはメチャ便利</li></ul></li></ul></section><section class="aligncenter section-title"><h1>まとめ</h1><ul><li>まだまだ荒削りですがPR歓迎です！！！！</li><li>シェーダー楽しいよ</li><li>みんなもおもしろWebサイト作ろうぜ</li></ul></section><section class="aligncenter"><p><a href="https://amagi.dev/react-vfx/">https://amagi.dev/react-vfx/</a></p></section></article></div><script type="text/javascript" src="runtime.455035ece581bccc129c.bundle.js"></script><script type="text/javascript" src="vendor.9.6423646d903c6724b35b.bundle.js"></script><script type="text/javascript" src="main.5.b3c336a0936f54e1b870.bundle.js"></script></body></html>
