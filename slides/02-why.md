@@ -22,7 +22,7 @@ import * as VFX from 'react-vfx'
 
 ---
 
-かっけ〜ｗ
+かっけ〜！
 
 <img src="./awww2.gif" alt="AWWWARDS example 1"/>
 
@@ -68,4 +68,7 @@ import * as VFX from 'react-vfx'
 
 ## できました
 
-<img src="./done.gif" alt="REACT-VFX 完成の様子"/>
+<a href="https://amagi.dev/react-vfx/" target="_blank">
+  <img src="./done.gif" alt="REACT-VFX 完成の様子"/>
+</a>
+

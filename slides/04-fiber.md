@@ -7,9 +7,10 @@
 
 ---
 
-## react-three-fiberを使用
+## [react-three-fiber](https://github.com/react-spring/react-three-fiber)を使用
 
 - 宣言的にシーンを記述できる
+- React + Three.js系ライブラリの中で<br/>最も筋が良さそう（個人の感想）
 
 ```tsx
 <Canvas>
@@ -22,12 +23,35 @@
 
 ---
 
-### 値の取り回しは<br/>react-springに依存
-- 毎フレーム更新するので、普通にpropsで渡すのは🆖
+### アニメーション用の値
+
+- 普通にnumberをpropsで渡すと重いので🆖
+- react-springのuseSpringを使う
+  - アニメーションで使いたい値のラッパー
 
 ---
 
-## REACT-VFX本体には使わない？
+```javascript
+// scrollのラッパーを作る
+const [{ scroll }, set] = useSpring(() => ({ scroll: 0 }));
+const onScroll = useCallback(e => {
+  set({ scroll: window.scrollY });
+}, [set]);
+
+// スクロール位置を 0 ~ 1 に変換
+const top = scroll.interpolate(x => {
+  return x / (document.body.scrollHeight - window.innerHeight);
+});
+
+return <>
+  <Triangle top={top} />
+  <Particles top={top} />
+</>;
+```
+
+---
+
+## REACT-VFX本体にも使う？
 
 - canvasを直接触りたかったのでやめた
   - react-three-fiberはcanvasやrenderer周りを<br/>

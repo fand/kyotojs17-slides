@@ -27,8 +27,9 @@ This sentence can be seen when using Presenter Mode.
 ---
 
 ## WebGLでVJやってます
+import vj from './vj.mp4';
 
-TODO: ここに画像
+<video src={vj} autoPlay loop muted></video>
 
 ---
 

@@ -81,6 +81,7 @@ const VFXImg = props => {
   const player = useContext(VFXContext);
   const ref = useRef(null);
 
+  // 画像ロード後に呼ぶ
   const init = useCallback(() => {
     // VFXPlayerに登録
     player?.addElement(ref.current, { shader });
@@ -101,11 +102,16 @@ import * as VFX from 'react-vfx';
 ## 3.メインループ
 
 - 各要素の要素の位置を毎フレーム取得
-  - 画面内にあれば、その位置にテクスチャを描画
-  - <b><VFX.VFXDiv shader="rainbow">まあまあ重いけど動くからヨシ！</VFX.VFXDiv></b>
-- IntersectionObserverも試したけど微妙だった
-  - コールバックの実行がたまに遅れる(？)
-  - 遅延ロード等に使われるAPIだから仕方ない……
+- 画面内にあれば、その位置にテクスチャを描画
+- <b><VFX.VFXDiv shader="rainbow">まあまあ重いけど動くからヨシ！</VFX.VFXDiv></b>
+
+---
+
+### IntersectionObserverは？
+
+- 試したけど微妙だった
+- コールバックの実行がたまに遅れる(？)
+- 遅延ロード等に使われるAPIだから仕方ない……
 
 ---
 　　
@@ -113,17 +119,29 @@ import * as VFX from 'react-vfx';
 
 - 当初は[html2canvas](https://html2canvas.hertzen.com/)を使用
 - 遅い上に無駄なリクエストが走りまくるので断念
-  - キャプチャするたびにページ全体をクローンする仕組みのため
+  - キャプチャするたびにページ全体をクローンする
   - 正確にスタイルを再現するには<br/>
-    ページ全体をクローンする必要があるので仕方ない
+    ページ全体をクローンする必要があるため
+
+---
+
+TODO: 古いブランチでNetworkタブのスクショ撮る
 
 ---
 
 - 今回は、最低限プレーンテキストが画像化できれば良い
-- SVGのforeign objectを使う
-  - html2canvasの中身で使ってる奴
+- SVGの[foreignObject](https://developer.mozilla.org/ja/docs/Web/SVG/Element/foreignObject#Browser_compatibility)を使う
+  - SVGにDOMを埋め込める奴
 
-TODO: foreignObjectについて書く
+---
+
+### dom2canvasの流れ
+
+- 画像化したい要素をクローン
+  - 親要素もクローン (vertical-align等の再現に必要)
+- outerHTMLからSVG文字列を作成
+- canvasに描画
+- THREE.Textureにcanvasを渡す
 
 ---
 
@@ -135,11 +153,14 @@ TODO: ここにdom2canvasの画像を貼る
 
 ## dom2canvasの困りごと
 
-- 子要素があるとおかしくなる
 - 微妙にズレたりズレなかったりする
-  - html2canvasでもズレてたので改善ムズそう
+  - html2canvasでもズレてたのでムズそう
+- 子要素があるとおかしくなる
 - 改行するとおかしくなる
-- CORS周り
-  - TODO: 詳細を調べて書く
+- クロスオリジンなリソースを読み込めない
 
-……etc
+---
+
+なんかいい方法あったら教えてください
+
+

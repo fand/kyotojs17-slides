@@ -1,14 +1,15 @@
 meta:
   title: Inside REACT-VFX
-  thumbnail: slides/logo.png
-  description:
+  thumbnail: slides/ogimage.png
+  description: REACT-VFXの実装について解説
   sns:
     - twitter
+    - hatena
 slide:
   loop: true
   sidebar: true
   targetBlank: true
-  showIndex: true
+  showIndex: false
   isVertical: false
   code:
     languages:
@@ -23,6 +24,6 @@ slide:
 extends:
   js: ./index.js
   css: ./style.css
-  webpack:
+  webpack: ./webpack.config.js
 build:
   ssr: true
